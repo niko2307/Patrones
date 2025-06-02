@@ -7,6 +7,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.crypto.SecretKey;
@@ -26,14 +27,22 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(UserDetails userDetails) {
-        return Jwts.builder()
-                .setSubject(userDetails.getUsername())
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
-                .signWith(getKey(), SignatureAlgorithm.HS256)
-                .compact();
-    }
+   public String generateToken(UserDetails userDetails) {
+    // Extrae el rol como texto
+    String rol = userDetails.getAuthorities()
+                  .stream()
+                  .map(GrantedAuthority::getAuthority)
+                  .findFirst()
+                  .orElse("UNKNOWN"); 
+
+    return Jwts.builder()
+            .setSubject(userDetails.getUsername())
+            .claim("rol", rol)
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
+            .signWith(getKey(), SignatureAlgorithm.HS256)
+            .compact();
+}
 
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();

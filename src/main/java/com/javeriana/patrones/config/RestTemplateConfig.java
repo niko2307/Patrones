@@ -19,10 +19,12 @@ public class RestTemplateConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**") // Permite todas las rutas
-                        .allowedOrigins("http://localhost:4200") // Cambia al URL de tu frontend
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Métodos permitidos
-                        .allowedHeaders("*");
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:4200") // Frontend origin
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Authorization") // Permite exponer el header JWT si lo usas
+                        .allowCredentials(true); // Si estás enviando cookies o Authorization
             }
         };
     }
