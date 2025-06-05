@@ -13,12 +13,7 @@ import com.javeriana.patrones.model.TipoServicio;
 public class StrategyContext {
     private final Map<TipoServicio, QuejaStrategy> estrategias = new HashMap<>();
 
-    public StrategyContext(
-        EnergiaStrategy energia,
-        AguaStrategy agua,
-        AseoStrategy aseo,
-        AlcantarilladoStrategy alcantarillado
-    ) {
+    public StrategyContext(EnergiaStrategy energia, AguaStrategy agua, AseoStrategy aseo, AlcantarilladoStrategy alcantarillado) {
         estrategias.put(TipoServicio.ENERGIA, energia);
         estrategias.put(TipoServicio.AGUA, agua);
         estrategias.put(TipoServicio.ASEO, aseo);
@@ -31,7 +26,9 @@ public class StrategyContext {
         if (estrategia != null) {
             estrategia.enrutar(queja);
         } else {
-            System.out.println(" No hay estrategia para: " + tipo);
+            System.out.println("❌ No hay estrategia para: " + tipo);
         }
     }
 }
+
+

@@ -35,31 +35,41 @@ private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
-    @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+ @PostMapping("/login")
+public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
+    authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+    );
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        String token = jwtUtil.generateToken(userDetails);
+    UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
 
-        return ResponseEntity.ok(new AuthResponse(token));
-    }
+    Usuario usuario = usuarioRepository.findByEmail(request.getEmail())
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+    String token = jwtUtil.generateToken(userDetails, usuario.getId());
+
+    return ResponseEntity.ok(new AuthResponse(token, usuario.getId(), usuario.getRol().name()));
+}
+
 
     @PostMapping("/register")
-    public ResponseEntity<UsuarioDTO> register(@RequestBody UsuarioRegistroDTO dto) {
-        // Validar si ya existe un usuario con el mismo email
-        if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build(); // 409 Conflict
-        }
-
-        Usuario usuario = modelMapper.map(dto, Usuario.class);
-        usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
-
-        Usuario registrado = usuarioRepository.save(usuario);
-        UsuarioDTO response = modelMapper.map(registrado, UsuarioDTO.class);
-
-        return new ResponseEntity<>(response, HttpStatus.CREATED);
+public ResponseEntity<AuthResponse> register(@RequestBody UsuarioRegistroDTO dto) {
+    if (usuarioRepository.findByEmail(dto.getEmail()).isPresent()) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).build();
     }
+
+    Usuario usuario = modelMapper.map(dto, Usuario.class);
+    usuario.setPassword(passwordEncoder.encode(dto.getPassword()));
+    Usuario registrado = usuarioRepository.save(usuario);
+
+    UserDetails userDetails = userDetailsService.loadUserByUsername(registrado.getEmail());
+    String token = jwtUtil.generateToken(userDetails, registrado.getId());
+
+    return ResponseEntity.ok(new AuthResponse(
+        token,
+        registrado.getId(),
+        registrado.getRol().name()
+    ));
+}
+
 }

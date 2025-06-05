@@ -3,6 +3,7 @@ package com.javeriana.patrones.model;
 
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -40,4 +41,12 @@ public class Queja {
     @ManyToOne
     @JoinColumn(name = "empresa_id")
     private EmpresaVigilada empresaVigilada;
+
+
+    @Column(name = "ruta_asignada")
+     private String rutaAsignada;
+
+     @Column(name = "vencimiento")
+     private LocalDateTime vencimiento;
+
 }

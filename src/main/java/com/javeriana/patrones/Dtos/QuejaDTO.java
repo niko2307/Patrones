@@ -15,4 +15,8 @@ public class QuejaDTO {
     private String fechaRegistro;
     private Long usuarioId;
     private Long empresaId;
+    private EmpresaDTO empresa;
+    private String rutaAsignada;
+    private String vencimiento;
+
 }

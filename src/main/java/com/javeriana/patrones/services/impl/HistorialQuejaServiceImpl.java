@@ -42,30 +42,37 @@ public class HistorialQuejaServiceImpl implements HistorialQuejaService {
 
    
 
-    @Override
-  public HistorialQuejaDTO registrarHistorial(HistorialQuejaDTO dto) {
-        Queja queja = quejaRepository.findById(dto.getQuejaId())
-            .orElseThrow(() -> new EntityNotFoundException("Queja no encontrada"));
+   
+  @Override
+public HistorialQuejaDTO registrarHistorial(HistorialQuejaDTO dto) {
+    Queja queja = quejaRepository.findById(dto.getQuejaId())
+        .orElseThrow(() -> new EntityNotFoundException("Queja no encontrada"));
 
-        HistorialQueja historial = new HistorialQueja();
-        historial.setQueja(queja);
-        historial.setEstadoAnterior(EstadoQueja.valueOf(dto.getEstadoAnterior()));
-        historial.setEstadoNuevo(EstadoQueja.valueOf(dto.getEstadoNuevo()));
-        historial.setFechaCambio(LocalDateTime.now());
+    // ✅ Actualizar estado actual de la queja
+    EstadoQueja nuevoEstado = EstadoQueja.valueOf(dto.getEstadoNuevo());
+    queja.setEstado(nuevoEstado);
+    quejaRepository.save(queja);
 
-        HistorialQueja guardado = repository.save(historial);
+    // ✅ Registrar historial
+    HistorialQueja historial = new HistorialQueja();
+    historial.setQueja(queja);
+    historial.setEstadoAnterior(EstadoQueja.valueOf(dto.getEstadoAnterior()));
+    historial.setEstadoNuevo(nuevoEstado);
+    historial.setFechaCambio(LocalDateTime.now());
 
-        // Simular notificación
-        EventoNotificacion evento = new EventoNotificacion(
-            "⚠️ La queja #" + dto.getQuejaId() + " cambió de estado de " +
-            dto.getEstadoAnterior() + " a " + dto.getEstadoNuevo(),
-            "admin@correo.com",
-            "ALERTA"
-        );
-        gestorNotificaciones.notificarObservadores(evento);
+    HistorialQueja guardado = repository.save(historial);
 
-        return modelMapper.map(guardado, HistorialQuejaDTO.class);
-    }
+    // ✅ Notificación simulada
+    EventoNotificacion evento = new EventoNotificacion(
+        "⚠️ La queja #" + dto.getQuejaId() + " cambió de estado de " +
+        dto.getEstadoAnterior() + " a " + dto.getEstadoNuevo(),
+        "admin@correo.com",
+        "ALERTA"
+    );
+    gestorNotificaciones.notificarObservadores(evento);
+
+    return modelMapper.map(guardado, HistorialQuejaDTO.class);
+}
 
     @Override
     public List<HistorialQuejaDTO> listarPorQueja(Long quejaId) {

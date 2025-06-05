@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 
@@ -27,22 +29,23 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }
 
-   public String generateToken(UserDetails userDetails) {
-    // Extrae el rol como texto
-    String rol = userDetails.getAuthorities()
-                  .stream()
-                  .map(GrantedAuthority::getAuthority)
-                  .findFirst()
-                  .orElse("UNKNOWN"); 
+  public String generateToken(UserDetails userDetails, Long userId) {
+    Map<String, Object> claims = new HashMap<>();
+    claims.put("rol", userDetails.getAuthorities().stream()
+        .findFirst()
+        .map(GrantedAuthority::getAuthority)
+        .orElse("USER"));
+    claims.put("userId", userId); // ✅ AGREGADO
 
     return Jwts.builder()
+            .setClaims(claims)
             .setSubject(userDetails.getUsername())
-            .claim("rol", rol)
             .setIssuedAt(new Date())
             .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
             .signWith(getKey(), SignatureAlgorithm.HS256)
             .compact();
 }
+
 
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();

@@ -10,5 +10,6 @@ public interface  QuejaService {
     List<QuejaDTO> listarPorUsuario(Long usuarioId);
     List<QuejaDTO> listarPorEstado(String estado);
     QuejaDTO obtenerPorId(Long id);
+    List<QuejaDTO> listarTodas();
 }
 
